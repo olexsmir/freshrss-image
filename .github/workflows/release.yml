@@ -1,0 +1,36 @@
+name: release
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch extensions
+        run: ./fetch.sh
+
+      - name: Build the container
+        run: ./build.sh $IMAGE_NAME ${{ github.sha }}
+
+      - name: Publish the container
+        run: |
+          docker tag "$IMAGE_NAME:${{ github.sha }}" "$IMAGE_NAME:latest"
+          docker push "$IMAGE_NAME:${{ github.sha }}"
+          docker push "$IMAGE_NAME:latest"

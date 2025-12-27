@@ -1,45 +1,38 @@
 app = 'myfreshyrssy'
-primary_region = 'otp'
+primary_region = 'fra'
 kill_signal = 'SIGINT'
-kill_timeout = '5s'
-
-[experimental]
-  auto_rollback = true
 
 [build]
-  image = 'ghcr.io/olexsmir/freshrss-image:latest'
+image = 'ghcr.io/olexsmir/freshrss-image:latest'
 
 [env]
-  CRON_MIN = '*/20'
+CRON_MIN = '*/20'  # update feeds every 20 mins
+TZ = "Europe/Kyiv"
 
 [[mounts]]
-  source = 'freshrss_data'
-  destination = '/var/www/FreshRSS/data'
+source = 'freshrss_data'
+destination = '/var/www/FreshRSS/data'
 
 [[services]]
-  protocol = 'tcp'
-  internal_port = 80
-  processes = ['app']
+protocol = 'tcp'
+internal_port = 80
+processes = ['app']
 
-  [[services.ports]]
-    port = 80
-    handlers = ['http']
-    force_https = true
+[[services.ports]]
+handlers = ['http']
+force_https = true
+port = 80
 
-  [[services.ports]]
-    port = 443
-    handlers = ['tls', 'http']
+[[services.ports]]
+handlers = ['tls', 'http']
+port = 443
 
-  [services.concurrency]
-    type = 'connections'
-    hard_limit = 5
-    soft_limit = 3
-
-  [[services.tcp_checks]]
-    interval = '15s'
-    grace_period = '1s'
+[services.concurrency]
+type = 'connections'
+hard_limit = 3
+soft_limit = 2
 
 [[vm]]
-  memory = '512mb'
-  cpu_kind = 'shared'
-  cpus = 1
+memory = '512mb'
+cpu_kind = 'shared'
+cpus = 1
